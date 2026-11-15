@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0f0c1d">
+<title>Imposter – English Word Game</title>
+<style>
+:root{--bg:#f4f2fb;--card:rgba(255,255,255,.85);--tx:#18152b;--mu:#6d6a85;--ac:#6c4cf1;--ac2:#ff4d6d;--bd:rgba(108,76,241,.15);--g:linear-gradient(135deg,#6c4cf1,#a24cf1 60%,#ff4d6d);box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f0c1d;--card:rgba(32,28,56,.8);--tx:#f3f1ff;--mu:#9d99bd;--ac:#9a82ff;--bd:rgba(154,130,255,.18);color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0f0c1d;--card:rgba(32,28,56,.8);--tx:#f3f1ff;--mu:#9d99bd;--ac:#9a82ff;--bd:rgba(154,130,255,.18);color-scheme:dark}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;min-height:100vh;position:relative;overflow-x:hidden}
+body::before{content:"";position:fixed;inset:-20% -20% auto auto;width:340px;height:340px;background:var(--g);filter:blur(90px);opacity:.35;z-index:-1;border-radius:50%}
+.wrap{max-width:480px;margin:0 auto;padding:18px 18px 100px}
+.logo{display:flex;align-items:center;gap:12px;margin:6px 0 20px}
+.logo i{width:46px;height:46px;border-radius:15px;background:var(--g);display:grid;place-items:center;font-style:normal;font-size:24px;box-shadow:0 8px 20px rgba(108,76,241,.4)}
+h1{font-size:26px;margin:0;letter-spacing:-.6px}
+.sub{color:var(--mu);margin:2px 0 0;font-size:14px;line-height:1.45}
+h2{font-size:19px;margin:0 0 12px;letter-spacing:-.3px}
+.card{background:var(--card);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid var(--bd);border-radius:24px;padding:20px;margin-bottom:14px;box-shadow:0 10px 30px rgba(40,20,120,.08)}
+label{font-size:12px;color:var(--mu);display:block;margin:14px 0 8px;font-weight:700;text-transform:uppercase;letter-spacing:.8px}
+input,select{width:100%;padding:15px;border-radius:14px;border:1.5px solid var(--bd);background:transparent;color:var(--tx);font-size:16px;outline:0;transition:.2s}
+input:focus,select:focus{border-color:var(--ac)}
+input.bad{border-color:var(--ac2)}
+select option{color:#000}
+.row{display:flex;align-items:center;gap:14px}
+.step{width:52px;height:52px;border-radius:16px;border:1.5px solid var(--bd);background:transparent;color:var(--tx);font-size:26px;transition:.15s}
+.step:active{transform:scale(.92)}
+.num{flex:1;text-align:center;font-size:44px;font-weight:800;background:var(--g);-webkit-background-clip:text;background-clip:text;color:transparent}
+.btn{width:100%;padding:18px;border:0;border-radius:18px;background:var(--g);color:#fff;font-size:17px;font-weight:700;margin-top:6px;box-shadow:0 10px 24px rgba(108,76,241,.35);transition:.15s}
+.btn:active{transform:scale(.97)}
+.btn:disabled{opacity:.4;box-shadow:none}
+.btn.alt{background:transparent;color:var(--tx);border:1.5px solid var(--bd);box-shadow:none}
+.btn.red{background:linear-gradient(135deg,#ff4d6d,#ff8a4d)}
+.vb.sel{background:var(--g);color:#fff;border-color:transparent}
+.tally{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--bd);font-size:15px;text-align:left}
+.err{color:var(--ac2);font-size:13px;min-height:18px;margin:8px 0 0;font-weight:600}
+.big{text-align:center;padding:34px 20px;animation:pop .35s ease}
+@keyframes pop{from{opacity:0;transform:translateY(12px) scale(.97)}to{opacity:1;transform:none}}
+.pname{font-size:32px;font-weight:800;margin:8px 0;letter-spacing:-.6px}
+.word{font-size:40px;font-weight:900;margin:18px 0;word-break:break-word;background:var(--g);-webkit-background-clip:text;background-clip:text;color:transparent;line-height:1.1}
+.word.imp{background:linear-gradient(135deg,#ff4d6d,#ff8a4d);-webkit-background-clip:text;background-clip:text;font-size:30px}
+.pill{display:inline-block;background:var(--bd);border-radius:99px;padding:6px 14px;font-size:13px;color:var(--mu);font-weight:600}
+.dots{display:flex;justify-content:center;gap:6px;margin-bottom:14px}
+.dots b{width:8px;height:8px;border-radius:50%;background:var(--bd)}
+.dots b.on{background:var(--ac);width:22px;border-radius:6px}
+.timer{font-size:64px;font-weight:800;font-variant-numeric:tabular-nums;margin:10px 0;letter-spacing:-2px}
+nav{position:fixed;left:12px;right:12px;bottom:calc(10px + env(safe-area-inset-bottom,0px));max-width:456px;margin:0 auto;display:flex;background:var(--card);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid var(--bd);border-radius:22px;padding:6px;box-shadow:0 10px 30px rgba(0,0,0,.15)}
+nav button{flex:1;padding:11px 4px;border:0;border-radius:16px;background:none;color:var(--mu);font-size:12px;font-weight:700;transition:.2s}
+nav button.on{background:var(--g);color:#fff}
+.hide{display:none}
+ul{padding-left:20px;margin:6px 0}li{margin:8px 0;line-height:1.5;font-size:15px}
+.dt{display:flex;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid var(--bd);font-size:15px}
+.dt:last-child{border:0}.dt span:first-child{color:var(--mu)}.dt span:last-child{font-weight:600;text-align:right}
+.chip{display:block;background:var(--bd);border-radius:14px;padding:13px 14px;margin:8px 0;font-size:15px;line-height:1.4}
+</style></head><body>
+<div class="wrap">
+<div class="logo"><i>🕵️</i><div><h1>Imposter</h1><p class="sub">English word game · one phone per group</p></div></div>
+
+<section id="tab-play">
+ <div id="s-setup">
+  <div class="card">
+   <h2>Players</h2>
+   <div class="row"><button class="step" onclick="chg(-1)">−</button><div class="num" id="cnt">4</div><button class="step" onclick="chg(1)">+</button></div>
+   <div id="names"></div>
+   <label>Category</label>
+   <select id="cat"></select>
+   <p class="err" id="err"></p>
+  </div>
+  <button class="btn" id="go" onclick="start()" disabled>Start game</button>
+ </div>
+
+ <div id="s-pass" class="hide"><div class="card big">
+   <div class="dots" id="dots"></div>
+   <span class="pill" id="pi"></span>
+   <div class="pname" id="pn"></div>
+   <p class="sub">Hand the phone to this player.<br>Nobody else should look!</p>
+   <button class="btn" onclick="reveal()" style="margin-top:22px">Show my word</button></div></div>
+
+ <div id="s-reveal" class="hide"><div class="card big">
+   <div class="pname" id="rn" style="font-size:22px"></div>
+   <span class="pill" id="rc"></span>
+   <div class="word" id="rw"></div>
+   <p class="sub" id="rh"></p>
+   <button class="btn alt" onclick="nextP()" style="margin-top:22px">Hide &amp; pass on</button></div></div>
+
+ <div id="s-talk" class="hide">
+  <div class="card big">
+   <h2>Discussion time 💬</h2>
+   <p class="sub"><b id="first"></b> starts. Take turns giving one clue about the word. Don’t be too obvious!</p>
+   <div class="timer" id="tm">03:00</div>
+   <button class="btn alt" onclick="toggleT()" id="tb">Start timer</button></div>
+  <button class="btn red" onclick="startVote()">Start voting</button>
+ </div>
+
+ <div id="s-vote" class="hide"><div class="card big"><span class="pill" id="vp"></span><div class="pname" id="vn"></div><p class="sub">Who do you think is the imposter?<br>You can’t vote for yourself.</p><div id="vl" style="margin-top:16px"></div><button class="btn" id="vc" onclick="confirmV()" disabled>Confirm vote</button></div></div>
+
+ <div id="s-res" class="hide">
+  <div class="card big">
+   <div class="pname" id="vd" style="font-size:26px"></div>
+   <span class="pill">The imposter was</span>
+   <div class="pname" id="ri" style="font-size:38px;color:var(--ac2)"></div>
+   <span class="pill" style="margin-top:14px">The secret word was</span>
+   <div class="word" id="rwd"></div>
+   <span class="pill" style="margin-bottom:8px">Votes received</span><div id="tl"></div></div>
+  <button class="btn" onclick="again()">Play again</button>
+ </div>
+</section>
+
+<section id="tab-rules" class="hide">
+ <div class="card"><h2>🕵️ What is Imposter?</h2>
+  <p class="sub" style="font-size:15px">A social guessing game. Everyone knows the same secret word, except one person: the imposter. The imposter must blend in and avoid getting caught.</p></div>
+ <div class="card"><h2>How to play</h2>
+  <ul><li>Enter the number of players and every player’s name, then pick a category.</li>
+  <li>Pass the phone around. Each player secretly checks their word.</li>
+  <li>The imposter sees “YOU ARE THE IMPOSTER” instead of the word.</li>
+  <li>Take turns giving <b>one short English clue</b> about the word.</li>
+  <li>Never say the word itself!</li>
+  <li>When time is up (or when you decide), everyone votes in turn on the same phone.</li></ul></div>
+ <div class="card"><h2>Winning</h2>
+  <ul><li><b>The group wins</b> if the imposter gets the most votes on their own.</li>
+  <li><b>The imposter wins</b> if someone else gets the most votes, or if there is a tie.</li></ul></div>
+ <div class="card"><h2>Tips</h2>
+  <ul><li>Imposter: listen carefully and act like you know.</li>
+  <li>Others: be clear enough for your team but vague enough to fool the imposter.</li></ul></div>
+</section>
+
+<section id="tab-club" class="hide">
+ <div class="card"><h2>🗣️ Speaking Club</h2>
+  <p class="sub" style="margin-bottom:8px">A relaxed space to practise your English with friends.</p>
+  <div class="dt"><span>Day</span><span id="c-day"></span></div>
+  <div class="dt"><span>Time</span><span id="c-time"></span></div>
+  <div class="dt"><span>Place</span><span id="c-place"></span></div>
+  <div class="dt"><span>Level</span><span id="c-level"></span></div>
+  <div class="dt"><span>Contact</span><span id="c-contact"></span></div></div>
+ <div class="card"><h2>What we do</h2>
+  <ul><li>Word games like Imposter</li><li>Topic-based conversations and debates</li><li>Mini presentations and storytelling</li><li>Sharing new words and idioms</li></ul></div>
+ <div class="card"><h2>Conversation starters</h2><div id="qs"></div>
+  <button class="btn alt" onclick="newQ()">New questions</button></div>
+</section>
+</div>
+
+<nav>
+ <button class="on" onclick="tab('play',this)">🎮 Play</button>
+ <button onclick="tab('rules',this)">📖 Rules</button>
+ <button onclick="tab('club',this)">🗣️ Speaking Club</button>
+</nav>
+
+<script>
+/* ===== EDIT HERE: Speaking Club info ===== */
+const CLUB={day:"Every Thursday",time:"7:00 – 8:30 PM",place:"Club address / Online link",level:"A2 – C1 (everyone welcome)",contact:"@your_instagram"};
+
+/* ===== EDIT HERE: your word list =====
+   Add categories and words in this format. */
+const WORDS={
+ "Sample Category 1":["word one","word two","word three","word four"],
+ "Sample Category 2":["word five","word six","word seven","word eight"]
+};
+/* ====================================== */
+
+const cats=Object.keys(WORDS);
+let n=4,names=[],cur=0,word="",cat="",imp=0,tmr=null,left=180,run=false;
+const $=id=>document.getElementById(id);
+$("cat").innerHTML=cats.map(c=>`<option>${c}</option>`).join("")+(cats.length>1?"<option>Random (all categories)</option>":"");
+const esc=s=>s.replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;");
+function vals(){return[...document.querySelectorAll("#names input")].map(i=>i.value.trim())}
+function drawNames(){const old=[...document.querySelectorAll("#names input")].map(i=>i.value);
+ $("names").innerHTML="<label>Player names</label>"+Array.from({length:n},(_,i)=>`<input oninput="check()" placeholder="Player ${i+1} name" maxlength="20" autocomplete="off" style="margin-bottom:10px" value="${esc(old[i]||"")}">`).join("");
+ $("cnt").textContent=n;check()}
+function check(){const v=vals(),ins=document.querySelectorAll("#names input");
+ const empty=v.some(x=>!x),low=v.map(x=>x.toLowerCase()),dup=low.some((x,i)=>x&&low.indexOf(x)!==i);
+ ins.forEach((el,i)=>el.classList.toggle("bad",dup&&low.indexOf(low[i])!==i));
+ $("err").textContent=empty?"Enter a name for every player to start.":dup?"Each player needs a different name.":"";
+ $("go").disabled=empty||dup}
+function chg(d){n=Math.min(12,Math.max(3,n+d));drawNames()}
+function show(id){["setup","pass","reveal","talk","vote","res"].forEach(s=>$("s-"+s).classList.toggle("hide",s!==id))}
+function start(){check();if($("go").disabled)return;names=vals();
+ let c=$("cat").value;if(!WORDS[c])c=cats[Math.floor(Math.random()*cats.length)];
+ const list=WORDS[c];cat=c;word=list[Math.floor(Math.random()*list.length)];imp=Math.floor(Math.random()*n);cur=0;showPass()}
+function showPass(){$("pi").textContent=`Player ${cur+1} of ${n}`;$("pn").textContent=names[cur];
+ $("dots").innerHTML=names.map((_,i)=>`<b class="${i===cur?"on":""}"></b>`).join("");show("pass")}
+function reveal(){const im=cur===imp;$("rn").textContent=names[cur];$("rc").textContent=im?"Category: ???":"Category: "+cat;
+ $("rw").textContent=im?"YOU ARE THE IMPOSTER":word;$("rw").className="word"+(im?" imp":"");
+ $("rh").textContent=im?"You don’t know the word. Bluff your way through!":"Give clues without saying the word.";show("reveal")}
+function nextP(){cur++;if(cur<n)showPass();else{$("first").textContent=names[Math.floor(Math.random()*n)];resetT();show("talk")}}
+function fmt(){return String(Math.floor(left/60)).padStart(2,"0")+":"+String(left%60).padStart(2,"0")}
+function resetT(){clearInterval(tmr);run=false;left=180;$("tm").textContent=fmt();$("tb").textContent="Start timer"}
+function toggleT(){if(left<=0){resetT();return}
+ if(run){clearInterval(tmr);run=false;$("tb").textContent="Resume";return}
+ run=true;$("tb").textContent="Pause";tmr=setInterval(()=>{left--;$("tm").textContent=fmt();if(left<=0){clearInterval(tmr);run=false;$("tb").textContent="Time’s up!";if(navigator.vibrate)navigator.vibrate(400);setTimeout(()=>{if(left<=0)startVote()},1500)}},1000)}
+let vi=0,votes=[],pick=-1;
+function startVote(){clearInterval(tmr);run=false;vi=0;votes=names.map(()=>0);showVote()}
+function showVote(){pick=-1;$("vp").textContent=`Voter ${vi+1} of ${n}`;$("vn").textContent=names[vi];
+ $("vl").innerHTML=names.map((p,i)=>i===vi?"":`<button class="btn alt vb" style="margin-bottom:8px" onclick="pickV(${i},this)">${esc(p)}</button>`).join("");
+ $("vc").disabled=true;show("vote")}
+function pickV(i,el){pick=i;document.querySelectorAll(".vb").forEach(b=>b.classList.remove("sel"));el.classList.add("sel");$("vc").disabled=false}
+function confirmV(){if(pick<0)return;votes[pick]++;vi++;if(vi<n)showVote();else showRes()}
+function showRes(){const mx=Math.max(...votes),top=votes.map((v,i)=>v===mx?i:-1).filter(i=>i>=0),caught=top.length===1&&top[0]===imp;
+ $("vd").textContent=caught?"🎉 The group wins!":"😈 The imposter wins!";$("vd").style.color=caught?"var(--ac)":"var(--ac2)";
+ $("ri").textContent=names[imp];$("rwd").textContent=word;
+ $("tl").innerHTML=names.map((p,i)=>({p,v:votes[i],i})).sort((a,b)=>b.v-a.v).map(o=>`<div class="tally"><span>${esc(o.p)}${o.i===imp?" 🕵️":""}</span><b>${o.v}</b></div>`).join("");show("res")}
+function again(){show("setup");check()}
+function tab(t,b){["play","rules","club"].forEach(x=>$("tab-"+x).classList.toggle("hide",x!==t));
+ document.querySelectorAll("nav button").forEach(x=>x.classList.remove("on"));b.classList.add("on");scrollTo(0,0)}
+const Q=["What was the best day of your life?","If you could live anywhere, where would it be?","Which skill would you like to learn and why?","Describe your perfect weekend.","What’s a habit you want to change?","Would you rather travel to the past or the future?","What’s the best advice you’ve ever received?","Tell us about a movie everyone should watch.","What would you do with a million dollars?","What is your biggest fear and why?"];
+function newQ(){$("qs").innerHTML=[...Q].sort(()=>Math.random()-.5).slice(0,3).map(q=>`<div class="chip">${q}</div>`).join("")}
+for(const k in CLUB)$("c-"+k).textContent=CLUB[k];
+drawNames();newQ();
+</script></body></html>
