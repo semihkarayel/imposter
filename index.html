@@ -3,7 +3,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0f0c1d">
-<title>Imposter – English Word Game</title>
+<title>Speaking Club Imposter Game</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🕵️%3C/text%3E%3C/svg%3E">
 <style>
 :root{--bg:#f4f2fb;--card:rgba(255,255,255,.85);--tx:#18152b;--mu:#6d6a85;--ac:#6c4cf1;--ac2:#ff4d6d;--bd:rgba(108,76,241,.15);--g:linear-gradient(135deg,#6c4cf1,#a24cf1 60%,#ff4d6d);box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f0c1d;--card:rgba(32,28,56,.8);--tx:#f3f1ff;--mu:#9d99bd;--ac:#9a82ff;--bd:rgba(154,130,255,.18);color-scheme:dark}}
@@ -56,7 +57,7 @@ ul{padding-left:20px;margin:6px 0}li{margin:8px 0;line-height:1.5;font-size:15px
 .chip{display:block;background:var(--bd);border-radius:14px;padding:13px 14px;margin:8px 0;font-size:15px;line-height:1.4}
 </style></head><body>
 <div class="wrap">
-<div class="logo"><i>🕵️</i><div><h1>Imposter</h1><p class="sub">English word game · one phone per group</p></div></div>
+<div class="logo"><i>🕵️</i><div><h1 style="font-size:21px">Speaking Club Imposter Game</h1><p class="sub">English word game · one phone per group</p></div></div>
 
 <section id="tab-play">
  <div id="s-setup">
@@ -64,8 +65,8 @@ ul{padding-left:20px;margin:6px 0}li{margin:8px 0;line-height:1.5;font-size:15px
    <h2>Players</h2>
    <div class="row"><button class="step" onclick="chg(-1)">−</button><div class="num" id="cnt">4</div><button class="step" onclick="chg(1)">+</button></div>
    <div id="names"></div>
-   <label>Category</label>
-   <select id="cat"></select>
+   
+   
    <p class="err" id="err"></p>
   </div>
   <button class="btn" id="go" onclick="start()" disabled>Start game</button>
@@ -80,7 +81,7 @@ ul{padding-left:20px;margin:6px 0}li{margin:8px 0;line-height:1.5;font-size:15px
 
  <div id="s-reveal" class="hide"><div class="card big">
    <div class="pname" id="rn" style="font-size:22px"></div>
-   <span class="pill" id="rc"></span>
+   
    <div class="word" id="rw"></div>
    <p class="sub" id="rh"></p>
    <button class="btn alt" onclick="nextP()" style="margin-top:22px">Hide &amp; pass on</button></div></div>
@@ -112,7 +113,7 @@ ul{padding-left:20px;margin:6px 0}li{margin:8px 0;line-height:1.5;font-size:15px
  <div class="card"><h2>🕵️ What is Imposter?</h2>
   <p class="sub" style="font-size:15px">A social guessing game. Everyone knows the same secret word, except one person: the imposter. The imposter must blend in and avoid getting caught.</p></div>
  <div class="card"><h2>How to play</h2>
-  <ul><li>Enter the number of players and every player’s name, then pick a category.</li>
+  <ul><li>Enter the number of players and every player’s name.</li>
   <li>Pass the phone around. Each player secretly checks their word.</li>
   <li>The imposter sees “YOU ARE THE IMPOSTER” instead of the word.</li>
   <li>Take turns giving <b>one short English clue</b> about the word.</li>
@@ -152,17 +153,12 @@ ul{padding-left:20px;margin:6px 0}li{margin:8px 0;line-height:1.5;font-size:15px
 const CLUB={day:"Every Thursday",time:"7:00 – 8:30 PM",place:"Club address / Online link",level:"A2 – C1 (everyone welcome)",contact:"@your_instagram"};
 
 /* ===== EDIT HERE: your word list =====
-   Add categories and words in this format. */
-const WORDS={
- "Sample Category 1":["word one","word two","word three","word four"],
- "Sample Category 2":["word five","word six","word seven","word eight"]
-};
+   One word or phrase per item, separated by commas. */
+const WORDS=["word one","word two","word three","word four","word five","word six"];
 /* ====================================== */
 
-const cats=Object.keys(WORDS);
 let n=4,names=[],cur=0,word="",cat="",imp=0,tmr=null,left=180,run=false;
 const $=id=>document.getElementById(id);
-$("cat").innerHTML=cats.map(c=>`<option>${c}</option>`).join("")+(cats.length>1?"<option>Random (all categories)</option>":"");
 const esc=s=>s.replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;");
 function vals(){return[...document.querySelectorAll("#names input")].map(i=>i.value.trim())}
 function drawNames(){const old=[...document.querySelectorAll("#names input")].map(i=>i.value);
@@ -176,11 +172,11 @@ function check(){const v=vals(),ins=document.querySelectorAll("#names input");
 function chg(d){n=Math.min(12,Math.max(3,n+d));drawNames()}
 function show(id){["setup","pass","reveal","talk","vote","res"].forEach(s=>$("s-"+s).classList.toggle("hide",s!==id))}
 function start(){check();if($("go").disabled)return;names=vals();
- let c=$("cat").value;if(!WORDS[c])c=cats[Math.floor(Math.random()*cats.length)];
- const list=WORDS[c];cat=c;word=list[Math.floor(Math.random()*list.length)];imp=Math.floor(Math.random()*n);cur=0;showPass()}
+ 
+ word=WORDS[Math.floor(Math.random()*WORDS.length)];imp=Math.floor(Math.random()*n);cur=0;showPass()}
 function showPass(){$("pi").textContent=`Player ${cur+1} of ${n}`;$("pn").textContent=names[cur];
  $("dots").innerHTML=names.map((_,i)=>`<b class="${i===cur?"on":""}"></b>`).join("");show("pass")}
-function reveal(){const im=cur===imp;$("rn").textContent=names[cur];$("rc").textContent=im?"Category: ???":"Category: "+cat;
+function reveal(){const im=cur===imp;$("rn").textContent=names[cur];
  $("rw").textContent=im?"YOU ARE THE IMPOSTER":word;$("rw").className="word"+(im?" imp":"");
  $("rh").textContent=im?"You don’t know the word. Bluff your way through!":"Give clues without saying the word.";show("reveal")}
 function nextP(){cur++;if(cur<n)showPass();else{$("first").textContent=names[Math.floor(Math.random()*n)];resetT();show("talk")}}
