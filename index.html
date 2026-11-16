@@ -34,6 +34,7 @@ select option{color:#000}
 .btn:disabled{opacity:.4;box-shadow:none}
 .btn.alt{background:transparent;color:var(--tx);border:1.5px solid var(--bd);box-shadow:none}
 .btn.red{background:linear-gradient(135deg,#ff4d6d,#ff8a4d)}
+.snd{display:flex;gap:5px;margin-left:auto}.snd button{width:36px;height:36px;border-radius:13px;border:1.5px solid var(--bd);background:var(--card);font-size:17px}.snd button.off{opacity:.35}
 .vb.sel{background:var(--g);color:#fff;border-color:transparent}
 .tally{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--bd);font-size:15px;text-align:left}
 .err{color:var(--ac2);font-size:13px;min-height:18px;margin:8px 0 0;font-weight:600}
@@ -57,7 +58,7 @@ ul{padding-left:20px;margin:6px 0}li{margin:8px 0;line-height:1.5;font-size:15px
 .chip{display:block;background:var(--bd);border-radius:14px;padding:13px 14px;margin:8px 0;font-size:15px;line-height:1.4}
 </style></head><body>
 <div class="wrap">
-<div class="logo"><i>🕵️</i><div><h1 style="font-size:21px">Speaking Club Imposter Game</h1><p class="sub">English word game · one phone per group</p></div></div>
+<div class="logo"><i>🕵️</i><div><h1 style="font-size:21px">Speaking Club Imposter Game</h1><p class="sub">English word game · one phone per group</p></div><div class="snd"><button id="bm" onclick="togM()" aria-label="Music">🎵</button><button id="bs" onclick="togS()" aria-label="Sound effects">🔊</button><button id="bv" onclick="togV()" aria-label="Vibration">📳</button><button id="bl" onclick="togL()" aria-label="Language" style="font-size:12px;font-weight:700;color:var(--tx)">TR</button></div></div>
 
 <section id="tab-play">
  <div id="s-setup">
@@ -91,6 +92,7 @@ ul{padding-left:20px;margin:6px 0}li{margin:8px 0;line-height:1.5;font-size:15px
    <h2>Discussion time 💬</h2>
    <p class="sub"><b id="first"></b> starts. Take turns giving one clue about the word. Don’t be too obvious!</p>
    <div class="timer" id="tm">03:00</div>
+   <div id="turn" class="hide" style="margin:6px 0 12px"><span class="pill">Now speaking</span><div class="pname" id="sp" style="font-size:32px"></div><p class="sub" id="up"></p><button class="btn" onclick="nextTurn()">Next player →</button></div>
    <button class="btn alt" onclick="toggleT()" id="tb">Start timer</button></div>
   <button class="btn red" onclick="startVote()">Start voting</button>
  </div>
@@ -110,21 +112,22 @@ ul{padding-left:20px;margin:6px 0}li{margin:8px 0;line-height:1.5;font-size:15px
 </section>
 
 <section id="tab-rules" class="hide">
- <div class="card"><h2>🕵️ What is Imposter?</h2>
-  <p class="sub" style="font-size:15px">A social guessing game. Everyone knows the same secret word, except one person: the imposter. The imposter must blend in and avoid getting caught.</p></div>
- <div class="card"><h2>How to play</h2>
-  <ul><li>Enter the number of players and every player’s name.</li>
-  <li>Pass the phone around. Each player secretly checks their word.</li>
-  <li>The imposter sees “YOU ARE THE IMPOSTER” instead of the word.</li>
-  <li>Take turns giving <b>one short English clue</b> about the word.</li>
-  <li>Never say the word itself!</li>
-  <li>When time is up (or when you decide), everyone votes in turn on the same phone.</li></ul></div>
- <div class="card"><h2>Winning</h2>
-  <ul><li><b>The group wins</b> if the imposter gets the most votes on their own.</li>
-  <li><b>The imposter wins</b> if someone else gets the most votes, or if there is a tie.</li></ul></div>
- <div class="card"><h2>Tips</h2>
-  <ul><li>Imposter: listen carefully and act like you know.</li>
-  <li>Others: be clear enough for your team but vague enough to fool the imposter.</li></ul></div>
+ <div class="card"><h2>🕵️ What is Imposter?</h2><p class="sub" style="font-size:15px">A social guessing game. Everyone knows the same secret word, except one person: the imposter. The imposter must blend in and avoid getting caught.</p></div>
+ <div class="card"><h2>How to play</h2><ul>
+ <li>Enter the number of players and every player’s name.</li>
+ <li>Pass the phone around. Each player secretly checks their word.</li>
+ <li>The imposter sees “YOU ARE THE IMPOSTER” instead of the word.</li>
+ <li>Start the timer. Players take turns in order, saying one word or short clue about the secret word.</li>
+ <li>Press “Next player” after each clue. The order keeps going in rounds until time is up.</li>
+ <li>Never say the secret word itself!</li>
+ <li>When time is up (or when you press “Start voting”), everyone votes in turn on the same phone.</li></ul></div>
+ <div class="card"><h2>Winning</h2><ul>
+ <li>The group wins if the imposter gets the most votes on their own.</li>
+ <li>The imposter wins if someone else gets the most votes, or if there is a tie.</li></ul></div>
+ <div class="card"><h2>Tips</h2><ul>
+ <li>Imposter: listen carefully and act like you know the word.</li>
+ <li>Others: be clear enough for your team but vague enough to fool the imposter.</li>
+ <li>Use the buttons at the top to switch music, sound effects, vibration and language.</li></ul></div>
 </section>
 
 <section id="tab-club" class="hide">
@@ -159,48 +162,139 @@ const WORDS=["word one","word two","word three","word four","word five","word si
 
 let n=4,names=[],cur=0,word="",cat="",imp=0,tmr=null,left=180,run=false;
 const $=id=>document.getElementById(id);
+
+const L=(e,t)=>lang==="tr"?t:e;
+const TRD={
+"English word game · one phone per group":"İngilizce kelime oyunu · grup başına tek telefon",
+"Players":"Oyuncular","Start game":"Oyunu başlat",
+"Hand the phone to this player.":"Telefonu bu oyuncuya ver.","Nobody else should look!":"Başkası bakmasın!",
+"Show my word":"Kelimemi göster","Hide & pass on":"Gizle ve sıradakine ver",
+"Discussion time 💬":"Tartışma zamanı 💬",
+"starts. Take turns giving one clue about the word. Don’t be too obvious!":"başlıyor. Sırayla kelimeyle ilgili tek bir ipucu verin. Çok açık olmayın!",
+"Start timer":"Süreyi başlat","Pause":"Duraklat","Resume":"Devam et","Time’s up!":"Süre doldu!",
+"Now speaking":"Şimdi konuşuyor","Next player →":"Sıradaki oyuncu →","Start voting":"Oylamayı başlat",
+"Who do you think is the imposter?":"Sence imposter kim?","You can’t vote for yourself.":"Kendine oy veremezsin.",
+"Confirm vote":"Oyu onayla","The imposter was":"Imposter şuydu","The secret word was":"Gizli kelime şuydu",
+"Votes received":"Alınan oylar","Play again":"Tekrar oyna",
+"YOU ARE THE IMPOSTER":"SEN IMPOSTER’SIN","You don’t know the word. Bluff your way through!":"Kelimeyi bilmiyorsun. Blöf yap!",
+"Give clues without saying the word.":"Kelimeyi söylemeden ipucu ver.",
+"Enter a name for every player to start.":"Başlamak için her oyuncunun adını gir.",
+"Each player needs a different name.":"Her oyuncunun adı farklı olmalı.",
+"🎉 The group wins!":"🎉 Grup kazandı!","😈 The imposter wins!":"😈 Imposter kazandı!",
+"🎮 Play":"🎮 Oyun","📖 Rules":"📖 Kurallar","🗣️ Speaking Club":"🗣️ Speaking Club",
+"🕵️ What is Imposter?":"🕵️ Imposter nedir?",
+"A social guessing game. Everyone knows the same secret word, except one person: the imposter. The imposter must blend in and avoid getting caught.":"Sosyal bir tahmin oyunu. Herkes aynı gizli kelimeyi bilir, sadece imposter bilmez. Imposter aralarına karışmalı ve yakalanmamalı.",
+"How to play":"Nasıl oynanır",
+"Enter the number of players and every player’s name.":"Oyuncu sayısını ve her oyuncunun adını gir.",
+"Pass the phone around. Each player secretly checks their word.":"Telefonu elden ele verin. Her oyuncu kelimesine gizlice bakar.",
+"The imposter sees “YOU ARE THE IMPOSTER” instead of the word.":"Imposter kelime yerine “SEN IMPOSTER’SIN” yazısını görür.",
+"Start the timer. Players take turns in order, saying one word or short clue about the secret word.":"Süreyi başlatın. Oyuncular sırayla gizli kelimeyle ilgili tek bir kelime ya da kısa bir ipucu söyler.",
+"Press “Next player” after each clue. The order keeps going in rounds until time is up.":"Her ipucundan sonra “Sıradaki oyuncu”ya basın. Süre bitene kadar sıra turlar halinde devam eder.",
+"Never say the secret word itself!":"Gizli kelimenin kendisini asla söyleme!",
+"When time is up (or when you press “Start voting”), everyone votes in turn on the same phone.":"Süre bitince (ya da “Oylamayı başlat”a basınca) herkes aynı telefonda sırayla oy verir.",
+"Winning":"Kazanma",
+"The group wins if the imposter gets the most votes on their own.":"Imposter tek başına en çok oyu alırsa grup kazanır.",
+"The imposter wins if someone else gets the most votes, or if there is a tie.":"Başka biri en çok oyu alırsa ya da oylar berabere kalırsa imposter kazanır.",
+"Tips":"İpuçları",
+"Imposter: listen carefully and act like you know the word.":"Imposter: dikkatle dinle ve kelimeyi biliyormuş gibi davran.",
+"Others: be clear enough for your team but vague enough to fool the imposter.":"Diğerleri: takımınız anlasın ama imposter şaşırsın diye ne çok açık ne çok belirsiz olun.",
+"Use the buttons at the top to switch music, sound effects, vibration and language.":"Üstteki butonlarla müziği, ses efektlerini, titreşimi ve dili açıp kapatabilirsin.",
+"🗣️ Speaking Club":"🗣️ Speaking Club",
+"A relaxed space to practise your English with friends.":"Arkadaşlarınla İngilizce pratik yapabileceğin rahat bir ortam.",
+"Day":"Gün","Time":"Saat","Place":"Yer","Level":"Seviye","Contact":"İletişim",
+"What we do":"Neler yapıyoruz","Word games like Imposter":"Imposter gibi kelime oyunları",
+"Topic-based conversations and debates":"Konu bazlı sohbetler ve tartışmalar",
+"Mini presentations and storytelling":"Mini sunumlar ve hikâye anlatımı",
+"Sharing new words and idioms":"Yeni kelime ve deyim paylaşımı",
+"Conversation starters":"Sohbet soruları","New questions":"Yeni sorular",
+"What was the best day of your life?":"Hayatının en güzel günü hangisiydi?",
+"If you could live anywhere, where would it be?":"İstediğin yerde yaşayabilseydin neresi olurdu?",
+"Which skill would you like to learn and why?":"Hangi yeteneği öğrenmek isterdin ve neden?",
+"Describe your perfect weekend.":"Mükemmel hafta sonunu anlat.",
+"What’s a habit you want to change?":"Değiştirmek istediğin bir alışkanlık nedir?",
+"Would you rather travel to the past or the future?":"Geçmişe mi geleceğe mi yolculuk yapmak isterdin?",
+"What’s the best advice you’ve ever received?":"Aldığın en iyi tavsiye neydi?",
+"Tell us about a movie everyone should watch.":"Herkesin izlemesi gereken bir filmi anlat.",
+"What would you do with a million dollars?":"Bir milyon dolarla ne yapardın?",
+"What is your biggest fear and why?":"En büyük korkun nedir ve neden?"};
+const T=s=>lang==="tr"&&TRD[s]||s;
+function applyLang(){document.documentElement.lang=lang;const w=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT),a=[];let q;while(q=w.nextNode())if(q.parentNode.tagName!=="SCRIPT")a.push(q);
+ a.forEach(x=>{if(x._o===undefined)x._o=x.nodeValue;const k=x._o.trim();if(!k)return;const r=lang==="tr"&&TRD[k];x.nodeValue=r?x._o.replace(k,r):x._o});
+ $("bl").textContent=lang==="tr"?"EN":"TR"}
+/* ===== Sound engine (no audio files needed) ===== */
+let AC=null,mOn=true,sOn=true,vOn=true,lang="en",mTimer=null,step=0,ua=false;
+try{mOn=localStorage.getItem("mOn")!=="0";sOn=localStorage.getItem("sOn")!=="0";vOn=localStorage.getItem("vOn")!=="0";lang=localStorage.getItem("lang")==="tr"?"tr":"en"}catch(e){}
+function sv(k,v){try{localStorage.setItem(k,v?"1":"0")}catch(e){}}
+function ctx(){if(!AC)AC=new(window.AudioContext||window.webkitAudioContext)();if(AC.state==="suspended")AC.resume();return AC}
+function tone(f,t0,d,type,v,slide){const c=ctx(),o=c.createOscillator(),g=c.createGain();o.type=type||"sine";o.frequency.setValueAtTime(f,t0);if(slide)o.frequency.exponentialRampToValueAtTime(slide,t0+d);g.gain.setValueAtTime(0.0001,t0);g.gain.exponentialRampToValueAtTime(v,t0+.02);g.gain.exponentialRampToValueAtTime(0.0001,t0+d);o.connect(g);g.connect(c.destination);o.start(t0);o.stop(t0+d+.05)}
+function seq(a,t,gap,d,type,v){a.forEach((f,i)=>tone(f,t+i*gap,d,type,v))}
+const VB={click:10,plus:10,minus:10,start:50,reveal:60,next:30,pick:15,vote:40,alarm:[300,100,300],win:[80,50,80,50,200],lose:500};
+function sfx(k){if(ua&&vOn&&navigator.vibrate&&VB[k]){try{navigator.vibrate(VB[k])}catch(e){}}if(!sOn||!ua)return;const t=ctx().currentTime;
+ if(k==="click")tone(660,t,.08,"triangle",.14);
+ else if(k==="plus")seq([600,800],t,.06,.09,"triangle",.14);
+ else if(k==="minus")seq([800,560],t,.06,.09,"triangle",.14);
+ else if(k==="start")seq([392,523,659,784],t,.09,.18,"triangle",.16);
+ else if(k==="reveal")seq([440,554,659],t,.08,.2,"sine",.16);
+ else if(k==="imp"){tone(130,t,.7,"sawtooth",.12,70);tone(196,t+.05,.7,"square",.05,98)}
+ else if(k==="next")seq([523,392],t,.08,.12,"triangle",.14);
+ else if(k==="pick")tone(720,t,.07,"square",.07);
+ else if(k==="vote")seq([500,750],t,.07,.12,"triangle",.15);
+ else if(k==="alarm")seq([880,660,880,660],t,.15,.12,"square",.1);
+ else if(k==="win"){seq([523,659,784,1047,784,1047],t,.12,.28,"triangle",.2);tone(262,t,.9,"sine",.12)}
+ else if(k==="lose"){seq([330,311,294,262,220],t,.2,.4,"sawtooth",.09);tone(55,t,1.4,"sine",.2,40)}}
+const MEL=[392,0,440,0,523,0,440,0,392,0,330,0,392,0,0,0,349,0,392,0,440,0,392,0,330,0,294,0,330,0,0,0],BASS=[196,196,175,165];
+function musicStart(){if(mTimer||!mOn||!ua)return;ctx();mTimer=setInterval(()=>{const t=AC.currentTime+.05,f=MEL[step%MEL.length];if(f)tone(f,t,.45,"triangle",.045);if(step%8===0)tone(BASS[(step/8|0)%4],t,1.7,"sine",.06);step++},230)}
+function musicStop(){clearInterval(mTimer);mTimer=null}
+function togM(){mOn=!mOn;sv("mOn",mOn);$("bm").classList.toggle("off",!mOn);mOn?musicStart():musicStop()}
+function togV(){vOn=!vOn;sv("vOn",vOn);$("bv").classList.toggle("off",!vOn);sfx("click")}
+function togL(){lang=lang==="en"?"tr":"en";try{localStorage.setItem("lang",lang)}catch(e){}applyLang();drawNames();newQ()}
+function togS(){sOn=!sOn;sv("sOn",sOn);$("bs").classList.toggle("off",!sOn);sfx("click")}
+addEventListener("pointerdown",()=>{ua=true;musicStart()});
+document.addEventListener("visibilitychange",()=>{document.hidden?musicStop():musicStart()});
 const esc=s=>s.replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;");
 function vals(){return[...document.querySelectorAll("#names input")].map(i=>i.value.trim())}
 function drawNames(){const old=[...document.querySelectorAll("#names input")].map(i=>i.value);
- $("names").innerHTML="<label>Player names</label>"+Array.from({length:n},(_,i)=>`<input oninput="check()" placeholder="Player ${i+1} name" maxlength="20" autocomplete="off" style="margin-bottom:10px" value="${esc(old[i]||"")}">`).join("");
+ $("names").innerHTML="<label>"+L("Player names","Oyuncu isimleri")+"</label>"+Array.from({length:n},(_,i)=>`<input oninput="check()" placeholder="${L("Player "+(i+1)+" name",(i+1)+". oyuncunun adı")}" maxlength="20" autocomplete="off" style="margin-bottom:10px" value="${esc(old[i]||"")}">`).join("");
  $("cnt").textContent=n;check()}
 function check(){const v=vals(),ins=document.querySelectorAll("#names input");
  const empty=v.some(x=>!x),low=v.map(x=>x.toLowerCase()),dup=low.some((x,i)=>x&&low.indexOf(x)!==i);
  ins.forEach((el,i)=>el.classList.toggle("bad",dup&&low.indexOf(low[i])!==i));
- $("err").textContent=empty?"Enter a name for every player to start.":dup?"Each player needs a different name.":"";
+ $("err").textContent=empty?T("Enter a name for every player to start."):dup?T("Each player needs a different name."):"";
  $("go").disabled=empty||dup}
-function chg(d){n=Math.min(12,Math.max(3,n+d));drawNames()}
+function chg(d){sfx(d>0?"plus":"minus");n=Math.min(12,Math.max(3,n+d));drawNames()}
 function show(id){["setup","pass","reveal","talk","vote","res"].forEach(s=>$("s-"+s).classList.toggle("hide",s!==id))}
-function start(){check();if($("go").disabled)return;names=vals();
+function start(){check();if($("go").disabled)return;sfx("start");names=vals();
  
  word=WORDS[Math.floor(Math.random()*WORDS.length)];imp=Math.floor(Math.random()*n);cur=0;showPass()}
-function showPass(){$("pi").textContent=`Player ${cur+1} of ${n}`;$("pn").textContent=names[cur];
+function showPass(){$("pi").textContent=L(`Player ${cur+1} of ${n}`,`Oyuncu ${cur+1} / ${n}`);$("pn").textContent=names[cur];
  $("dots").innerHTML=names.map((_,i)=>`<b class="${i===cur?"on":""}"></b>`).join("");show("pass")}
-function reveal(){const im=cur===imp;$("rn").textContent=names[cur];
- $("rw").textContent=im?"YOU ARE THE IMPOSTER":word;$("rw").className="word"+(im?" imp":"");
- $("rh").textContent=im?"You don’t know the word. Bluff your way through!":"Give clues without saying the word.";show("reveal")}
-function nextP(){cur++;if(cur<n)showPass();else{$("first").textContent=names[Math.floor(Math.random()*n)];resetT();show("talk")}}
+function reveal(){const im=cur===imp;sfx("reveal");$("rn").textContent=names[cur];
+ $("rw").textContent=im?T("YOU ARE THE IMPOSTER"):word;$("rw").className="word"+(im?" imp":"");
+ $("rh").textContent=T(im?"You don’t know the word. Bluff your way through!":"Give clues without saying the word.");show("reveal")}
+function nextP(){sfx("next");cur++;if(cur<n)showPass();else{si=Math.floor(Math.random()*n);ti=0;$("first").textContent=names[si];resetT();show("talk")}}
+function showTurn(){$("turn").classList.remove("hide");$("sp").textContent=names[(si+ti)%n];$("up").textContent=L(`Round ${Math.floor(ti/n)+1} · Next: ${names[(si+ti+1)%n]}`,`Tur ${Math.floor(ti/n)+1} · Sıradaki: ${names[(si+ti+1)%n]}`)}
+function nextTurn(){sfx("next");ti++;showTurn()}
 function fmt(){return String(Math.floor(left/60)).padStart(2,"0")+":"+String(left%60).padStart(2,"0")}
-function resetT(){clearInterval(tmr);run=false;left=180;$("tm").textContent=fmt();$("tb").textContent="Start timer"}
-function toggleT(){if(left<=0){resetT();return}
- if(run){clearInterval(tmr);run=false;$("tb").textContent="Resume";return}
- run=true;$("tb").textContent="Pause";tmr=setInterval(()=>{left--;$("tm").textContent=fmt();if(left<=0){clearInterval(tmr);run=false;$("tb").textContent="Time’s up!";if(navigator.vibrate)navigator.vibrate(400);setTimeout(()=>{if(left<=0)startVote()},1500)}},1000)}
-let vi=0,votes=[],pick=-1;
-function startVote(){clearInterval(tmr);run=false;vi=0;votes=names.map(()=>0);showVote()}
-function showVote(){pick=-1;$("vp").textContent=`Voter ${vi+1} of ${n}`;$("vn").textContent=names[vi];
+function resetT(){clearInterval(tmr);run=false;left=180;$("turn").classList.add("hide");$("tm").textContent=fmt();$("tb").textContent=T("Start timer")}
+function toggleT(){sfx("click");if(left<=0){resetT();return}
+ if(run){clearInterval(tmr);run=false;$("tb").textContent=T("Resume");return}
+ run=true;$("tb").textContent=T("Pause");showTurn();tmr=setInterval(()=>{left--;$("tm").textContent=fmt();if(left<=0){clearInterval(tmr);run=false;$("tb").textContent=T("Time’s up!");sfx("alarm");setTimeout(()=>{if(left<=0)startVote()},1500)}},1000)}
+let vi=0,votes=[],pick=-1,si=0,ti=0;
+function startVote(){sfx("vote");clearInterval(tmr);run=false;vi=0;votes=names.map(()=>0);showVote()}
+function showVote(){pick=-1;$("vp").textContent=L(`Voter ${vi+1} of ${n}`,`Oylayan ${vi+1} / ${n}`);$("vn").textContent=names[vi];
  $("vl").innerHTML=names.map((p,i)=>i===vi?"":`<button class="btn alt vb" style="margin-bottom:8px" onclick="pickV(${i},this)">${esc(p)}</button>`).join("");
  $("vc").disabled=true;show("vote")}
-function pickV(i,el){pick=i;document.querySelectorAll(".vb").forEach(b=>b.classList.remove("sel"));el.classList.add("sel");$("vc").disabled=false}
-function confirmV(){if(pick<0)return;votes[pick]++;vi++;if(vi<n)showVote();else showRes()}
+function pickV(i,el){sfx("pick");pick=i;document.querySelectorAll(".vb").forEach(b=>b.classList.remove("sel"));el.classList.add("sel");$("vc").disabled=false}
+function confirmV(){if(pick<0)return;sfx("vote");votes[pick]++;vi++;if(vi<n)showVote();else showRes()}
 function showRes(){const mx=Math.max(...votes),top=votes.map((v,i)=>v===mx?i:-1).filter(i=>i>=0),caught=top.length===1&&top[0]===imp;
- $("vd").textContent=caught?"🎉 The group wins!":"😈 The imposter wins!";$("vd").style.color=caught?"var(--ac)":"var(--ac2)";
+ $("vd").textContent=T(caught?"🎉 The group wins!":"😈 The imposter wins!");musicStop();sfx(caught?"win":"lose");setTimeout(musicStart,4500);$("vd").style.color=caught?"var(--ac)":"var(--ac2)";
  $("ri").textContent=names[imp];$("rwd").textContent=word;
  $("tl").innerHTML=names.map((p,i)=>({p,v:votes[i],i})).sort((a,b)=>b.v-a.v).map(o=>`<div class="tally"><span>${esc(o.p)}${o.i===imp?" 🕵️":""}</span><b>${o.v}</b></div>`).join("");show("res")}
-function again(){show("setup");check()}
-function tab(t,b){["play","rules","club"].forEach(x=>$("tab-"+x).classList.toggle("hide",x!==t));
+function again(){sfx("click");show("setup");check()}
+function tab(t,b){sfx("click");["play","rules","club"].forEach(x=>$("tab-"+x).classList.toggle("hide",x!==t));
  document.querySelectorAll("nav button").forEach(x=>x.classList.remove("on"));b.classList.add("on");scrollTo(0,0)}
 const Q=["What was the best day of your life?","If you could live anywhere, where would it be?","Which skill would you like to learn and why?","Describe your perfect weekend.","What’s a habit you want to change?","Would you rather travel to the past or the future?","What’s the best advice you’ve ever received?","Tell us about a movie everyone should watch.","What would you do with a million dollars?","What is your biggest fear and why?"];
-function newQ(){$("qs").innerHTML=[...Q].sort(()=>Math.random()-.5).slice(0,3).map(q=>`<div class="chip">${q}</div>`).join("")}
+function newQ(){sfx("click");$("qs").innerHTML=[...Q].sort(()=>Math.random()-.5).slice(0,3).map(q=>`<div class="chip">${T(q)}</div>`).join("")}
 for(const k in CLUB)$("c-"+k).textContent=CLUB[k];
-drawNames();newQ();
+drawNames();newQ();$("bm").classList.toggle("off",!mOn);$("bs").classList.toggle("off",!sOn);$("bv").classList.toggle("off",!vOn);applyLang();
 </script></body></html>
