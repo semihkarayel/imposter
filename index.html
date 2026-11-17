@@ -153,11 +153,11 @@ ul{padding-left:20px;margin:6px 0}li{margin:8px 0;line-height:1.5;font-size:15px
 
 <script>
 /* ===== EDIT HERE: Speaking Club info ===== */
-const CLUB={day:"Every Tuesday",time:"6:00 – 7:00 PM",place:"Flamingo Shooters",level:"A1 – C2 (everyone welcome)",contact:"@du_speakingclub"};
+const CLUB={day:"Every Thursday",time:"7:00 – 8:30 PM",place:"Club address / Online link",level:"A2 – C1 (everyone welcome)",contact:"@your_instagram"};
 
 /* ===== EDIT HERE: your word list =====
    One word or phrase per item, separated by commas. */
-const WORDS=["apple","banana","pizza","chocolate","bread","cheese","coffee","water","egg","rice","dog","cat","bird","fish","horse","lion","elephant","rabbit","monkey","tiger","house","school","hospital","beach","park","kitchen","bed","door","window","street","car","bus","train","airplane","bicycle","phone","computer","book","pen","clock","doctor","teacher","police","football","music","movie","sun","rain","snow","tree","milk","tea","cake","soup","salad","orange","lemon","potato","tomato","chicken","cow","duck","bear","snake","turtle","sheep","shark","spider","bee","butterfly","mountain","river","forest","island","desert","bridge","castle","museum","restaurant","library","hotel","market","airport","farm","garden","chair","table","mirror","umbrella","bag","key","shoes","hat","glasses","camera","guitar","ball","candle","moon","cloud"];
+const WORDS=["word one","word two","word three","word four","word five","word six"];
 /* ====================================== */
 
 let n=4,names=[],cur=0,word="",cat="",imp=0,tmr=null,left=180,run=false;
@@ -249,7 +249,13 @@ function togM(){mOn=!mOn;sv("mOn",mOn);$("bm").classList.toggle("off",!mOn);mOn?
 function togV(){vOn=!vOn;sv("vOn",vOn);$("bv").classList.toggle("off",!vOn);sfx("click")}
 function togL(){lang=lang==="en"?"tr":"en";try{localStorage.setItem("lang",lang)}catch(e){}applyLang();drawNames();newQ()}
 function togS(){sOn=!sOn;sv("sOn",sOn);$("bs").classList.toggle("off",!sOn);sfx("click")}
+function unlockIOS(){try{if(navigator.audioSession)navigator.audioSession.type="playback"}catch(e){}
+ if(window._su){if(window._su.paused)window._su.play().catch(()=>{});return}
+ try{const n=800,b=new Uint8Array(44+n),v=new DataView(b.buffer),w=(o,s)=>[...s].forEach((c,i)=>b[o+i]=c.charCodeAt(0));
+ w(0,"RIFF");v.setUint32(4,36+n,true);w(8,"WAVEfmt ");v.setUint32(16,16,true);v.setUint16(20,1,true);v.setUint16(22,1,true);v.setUint32(24,8000,true);v.setUint32(28,8000,true);v.setUint16(32,1,true);v.setUint16(34,8,true);w(36,"data");v.setUint32(40,n,true);b.fill(128,44);
+ const a=new Audio(URL.createObjectURL(new Blob([b],{type:"audio/wav"})));a.loop=true;a.play().catch(()=>{});window._su=a}catch(e){}}
 addEventListener("pointerdown",()=>{ua=true;musicStart()});
+addEventListener("click",()=>{ua=true;unlockIOS();musicStart()});
 document.addEventListener("visibilitychange",()=>{document.hidden?musicStop():musicStart()});
 const esc=s=>s.replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;");
 function vals(){return[...document.querySelectorAll("#names input")].map(i=>i.value.trim())}
